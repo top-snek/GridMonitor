@@ -1,0 +1,187 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+/**
+ * @author Ethan Hardy
+ * @version Cs221 Fall 2020
+ * 
+ */
+public class GridMonitor implements GridMonitorInterface{
+
+
+	/* Instance Variables */
+	private Scanner scan;
+	private int gridHeight, gridWidth;
+	private double[][] baseGrid;
+	private double[][] sumGrid;
+	private double[][] avgGrid;
+	private double[][] deltaGrid;
+	private boolean[][] dangerGrid;
+	private File file;
+
+
+	/*Constructors */
+
+	/** creates the instance of GridMonitor
+	 * 
+	 * @param filename (filename for file being imported)
+	 * @throws FileNotFoundException (does not catch the exception)
+	 */
+
+	public GridMonitor(String filename) throws FileNotFoundException{
+		file = new File("src/" +filename);
+		scan = new Scanner(file);
+		gridHeight = Integer.parseInt(scan.next());
+		gridWidth = Integer.parseInt(scan.next());
+		sumGrid = new double [gridHeight][gridWidth];
+		baseGrid = new double [gridHeight][gridWidth];
+		deltaGrid = new double[gridHeight][gridWidth];	
+		dangerGrid = new boolean[gridHeight][gridWidth];
+		avgGrid = new double [gridHeight][gridWidth];
+
+		//Get grid data
+		for (int n = 0; n < gridHeight; n++) {
+			for (int c = 0; c < gridWidth; c++) {
+				baseGrid[n][c] = Double.parseDouble(scan.next());
+			}
+
+		}
+		scan.close();
+
+		// sum surrounding values at each coordinate
+		// if no coordinate is surrounding a specific point, use the points value
+		for (int n = 0; n < gridHeight; n++) {
+			for (int c = 0; c < gridWidth; c++) {
+				sumGrid[n][c]= 0;
+				try {
+					sumGrid[n][c] += baseGrid[n][c+1];
+				}
+				catch(IndexOutOfBoundsException e){
+					sumGrid[n][c] += baseGrid[n][c];
+				}
+				try {
+					sumGrid[n][c] += baseGrid[n][c-1];
+				}
+				catch(IndexOutOfBoundsException e){
+					sumGrid[n][c] += baseGrid[n][c];
+				}
+				try {
+					sumGrid[n][c] += baseGrid[n+1][c];
+				}
+				catch(IndexOutOfBoundsException e){
+					sumGrid[n][c] += baseGrid[n][c];
+				}
+				try {
+					sumGrid[n][c] += baseGrid[n-1][c];
+				}
+				catch(IndexOutOfBoundsException e){
+					sumGrid[n][c] += baseGrid[n][c];
+				}
+			}
+		}
+
+
+		//average the sum grid
+		for (int n = 0; n < gridHeight; n++) {
+			for (int c = 0; c < gridWidth; c++) {
+				avgGrid[n][c] = (sumGrid[n][c]/ 4);
+			}
+		}
+		// calculate the delta grid
+		for (int n = 0; n < gridHeight; n++) {
+			for (int c = 0; c < gridWidth; c++) {
+				deltaGrid[n][c] = Math.abs(avgGrid[n][c]/ 2);
+			}
+		}
+		// test to see if a cell explodes, if true it explodes
+		for (int n = 0; n < gridHeight; n++) {
+			for (int c = 0; c < gridWidth; c++) {
+				if(baseGrid[n][c] < (avgGrid[n][c] - deltaGrid[n][c]) 
+						|| baseGrid[n][c] > (avgGrid[n][c] + deltaGrid[n][c]) ) {
+					dangerGrid[n][c]= true;
+				}
+				else {
+					dangerGrid[n][c] = false;
+				}
+			}
+		}
+	}
+
+
+
+
+	/* Methods, getters return the grid as indicated by the method name */
+	@Override
+	public double[][] getBaseGrid() {
+		double grid[][] = new double[gridHeight][gridWidth];
+		for (int x = 0; x < gridHeight; x++) {
+			for( int y = 0; y <  gridWidth; y++) {
+				grid[x][y] = baseGrid[x][y];
+			}
+		}
+
+		return grid;
+	}
+
+	@Override
+	public double[][] getSurroundingSumGrid() {
+		double grid[][] = new double[gridHeight][gridWidth];
+		for (int x = 0; x < gridHeight; x++) {
+			for( int y = 0; y <  gridWidth; y++) {
+				grid[x][y] = sumGrid[x][y];
+			}
+		}
+
+		return grid;
+	}
+
+	@Override
+	public double[][] getSurroundingAvgGrid() {
+		double grid[][] = new double[gridHeight][gridWidth];
+		for (int x = 0; x < gridHeight; x++) {
+			for( int y = 0; y <  gridWidth; y++) {
+				grid[x][y] = avgGrid[x][y];
+			}
+		}
+
+		return grid;
+	}
+
+	@Override
+	public double[][] getDeltaGrid() {
+		double grid[][] = new double[gridHeight][gridWidth];
+		for (int x = 0; x < gridHeight; x++) {
+			for( int y = 0; y <  gridWidth; y++) {
+				grid[x][y] = deltaGrid[x][y];
+			}
+		}
+
+		return grid;
+	}
+
+	@Override
+	public boolean[][] getDangerGrid() {
+		boolean grid[][] = new boolean[gridHeight][gridWidth];
+		for (int n = 0; n < gridHeight; n++) {
+			for (int c = 0; c < gridWidth; c++) {
+				grid [n][c] = dangerGrid[n][c];
+			}
+		}
+		return grid;
+	}
+
+	//prints out base grid
+	public String toString() {
+		String str = "";
+		double grid[][] = new double[gridHeight][gridWidth];
+		for(int n = 0; n < gridHeight; n++) {
+			for(int c = 0; c < gridWidth; c++) {
+				grid[n][c] = baseGrid[n][c];
+				str += grid[n][c] + " ";
+			}	
+			str += "\n";
+		}
+		return str;
+	}
+}
+
